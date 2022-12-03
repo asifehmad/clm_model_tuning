@@ -45,10 +45,10 @@ training:
     resume_from_checkpoint: 0 # integer representing which checkpoint to load from, or <= 0 to not
     every_n_steps: null
     
-hub:
-  push_to_hub: false
-  model_id: null
-  token: null
+  hub:
+    push_to_hub: false
+    model_id: null
+    token: null
   
 tracking:
   enabled: false
