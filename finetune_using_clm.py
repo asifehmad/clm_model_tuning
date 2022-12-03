@@ -470,8 +470,10 @@ def main(cfg: DictConfig):
         if accelerator.is_main_process:
             tokenizer.save_pretrained(cfg.output_dir)
     
-    print('Pushing the Model to Hugging Face Hub')
+    print('Pushing Model weights and other related files to Hugging Face Hub')
     model.push_to_hub(cfg.output_dir) 
+    print('Pushing the Tokenizer and related files to Hugging Face Hub')
+    tokenizer.push_to_hub(cfg.output_dir)
 
 if __name__ == "__main__":
     main()
