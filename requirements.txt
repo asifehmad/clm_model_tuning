@@ -2,3 +2,5 @@ accelerate
 datasets >= 1.8.0
 sentencepiece != 0.1.92
 hydra-core
+deepspeed
+mpi4py
