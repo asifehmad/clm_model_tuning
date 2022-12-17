@@ -262,15 +262,17 @@ def load_training_checkpoint(model, load_dir, tag=None, **kwargs):
 # New Code #
 def evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset):
     model.eval()
-    losses = []
-    for step, batch in enumerate(eval_dataloader):
+#     losses = []
+    eval_losses = []
+    for _eval_step, eval_batch in enumerate(eval_dataloader):
         with torch.no_grad():
-            outputs = model(**batch)
+            outputs = model(**eval_batch)
 
         loss = outputs.loss
-        losses.append(accelerator.gather_for_metrics(loss.repeat(cfg.training.eval_batch_size)))
+        eval_losses.append(accelerator.gather_for_metrics(loss.repeat(cfg.training.eval_batch_size)))
 
-    losses = torch.cat(losses)
+    losses = torch.cat(eval_losses)
+    losses = losses[: len(eval_dataset)]
     try:
         eval_loss = torch.mean(losses)
         perplexity = math.exp(eval_loss)
@@ -523,6 +525,7 @@ def main(cfg: DictConfig):
         model.train()
         if cfg.tracking:
             total_loss = 0
+        train_losses = []
         for step, batch in enumerate(train_dataloader):
             # We need to skip steps until we reach the resumed step
             if cfg.training.checkpoint.resume_from_checkpoint and epoch == starting_epoch:
@@ -531,6 +534,11 @@ def main(cfg: DictConfig):
                     continue
             outputs = model(**batch)
             loss = outputs.loss
+            train_losses.append(
+                accelerator.gather(loss.repeat(cfg.training.train_batch_size))
+            )  
+            train_losses_tensor = torch.cat(train_losses)
+            train_loss = torch.mean(train_losses_tensor)            
             # We keep track of the loss at each epoch
             if cfg.tracking:
                 total_loss += loss.detach().float()
@@ -553,7 +561,7 @@ def main(cfg: DictConfig):
                 break
 
         perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
-        logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
+        logger.info(f"epoch {epoch}: perplexity: {perplexity} train_loss: {train_loss} eval_loss: {eval_loss}")
 
 #         if cfg.tracking:
 #             accelerator.log(
@@ -592,7 +600,7 @@ def main(cfg: DictConfig):
     # New Code #
     # Evaluates using the best checkpoint
     perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
-    logger.info(f"Best model metrics: perplexity: {perplexity} eval_loss: {eval_loss}")
+    logger.info(f"Best model metrics: perplexity: {perplexity} train_loss: {train_loss} eval_loss: {eval_loss}")
     if perplexity != best_metric:
         raise AssertionError(
             f"Best metric {best_metric} does not match the metric {perplexity} of the loaded best model."
@@ -620,7 +628,7 @@ def main(cfg: DictConfig):
 #                 repo.push_to_hub(commit_message="End of training", auto_lfs_prune=True)
 
         with open(os.path.join(cfg.output_dir, "all_results.json"), "w") as f:
-            json.dump({"perplexity": perplexity, "eval_loss": eval_loss.item()}, f)
+            json.dump({"perplexity": perplexity, "train_loss": train_loss.item(), "eval_loss": eval_loss.item()}, f)
 
 
 if __name__ == "__main__":
