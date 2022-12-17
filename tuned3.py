@@ -555,17 +555,17 @@ def main(cfg: DictConfig):
         perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
         logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
 
-        if cfg.tracking:
-            accelerator.log(
-                {
-                    "perplexity": perplexity,
-                    "eval_loss": eval_loss,
-                    "train_loss": total_loss.item() / len(train_dataloader),
-                    "epoch": epoch,
-                    "step": completed_steps,
-                },
-                step=completed_steps,
-            )
+#         if cfg.tracking:
+#             accelerator.log(
+#                 {
+#                     "perplexity": perplexity,
+#                     "eval_loss": eval_loss,
+#                     "train_loss": total_loss.item() / len(train_dataloader),
+#                     "epoch": epoch,
+#                     "step": completed_steps,
+#                 },
+#                 step=completed_steps,
+#             )
 
         # New Code #
         # Save the DeepSpeed checkpoint to the specified path
