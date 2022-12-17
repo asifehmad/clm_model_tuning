@@ -457,7 +457,7 @@ def main(cfg: DictConfig):
     
     
  # Figure out how many steps we should save the Accelerator states
-    if hasattr(cfg.checkpointing_steps, "isdigit"):
+    if hasattr(cfg.training.checkpoint.checkpointing_steps, "isdigit"):
         checkpointing_steps = cfg.training.checkpoint.checkpointing_steps
         if cfg.training.checkpoint.checkpointing_steps.isdigit():
             checkpointing_steps = int(cfg.training.checkpoint.checkpointing_steps)
