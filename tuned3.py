@@ -436,7 +436,7 @@ def main(cfg: DictConfig):
     if cfg.training.max_train_steps is None:
         cfg.training.max_train_steps = cfg.training.num_epochs * num_update_steps_per_epoch
     else:
-        cfg.training.num_train_epochs = math.ceil(cfg.training.max_train_steps / num_update_steps_per_epoch)
+        cfg.training.num_epochs = math.ceil(cfg.training.max_train_steps / num_update_steps_per_epoch)
     
     
     # Prepare everything using our accelerator
@@ -452,7 +452,7 @@ def main(cfg: DictConfig):
     
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / cfg.training.gradient_accumulation_steps)
-    cfg.training.max_train_steps = cfg.training.num_train_epochs * num_update_steps_per_epoch
+    cfg.training.max_train_steps = cfg.training.num_epochs * num_update_steps_per_epoch
     
     
     
