@@ -52,7 +52,7 @@ training:
     token: null
   
 tracking:
-  enabled: false
+  enabled: true
   report_to: "all"
   
 load_best_model: true
