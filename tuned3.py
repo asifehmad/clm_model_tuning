@@ -466,7 +466,7 @@ def main(cfg: DictConfig):
 
     # We need to initialize the trackers we use, and also store our configuration.
     # The trackers initializes automatically on the main process.
-    if cfg.with_tracking:
+    if cfg.tracking:
         experiment_config = vars(cfg)
         # TensorBoard cannot log Enums, need the raw value
         experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
