@@ -476,13 +476,15 @@ def main(cfg: DictConfig):
     # We need to initialize the trackers we use, and also store our configuration.
     # We initialize the trackers only on main process because `accelerator.log`
     # only logs on main process and we don't want empty logs/runs on other processes.
+    
+    
 #     if cfg.tracking.enabled is True and accelerator.is_main_process:
-    if cfg.tracking:
-        experiment_config = vars(cfg)
-        # TensorBoard cannot log Enums, need the raw value
-#         experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
-        experiment_config["training.lr_scheduler"] = experiment_config["training.lr_scheduler"].value
-        accelerator.init_trackers("tuned3", experiment_config)
+#     if cfg.tracking:
+#         experiment_config = vars(cfg)
+#         # TensorBoard cannot log Enums, need the raw value
+# #         experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
+# #         experiment_config["training.lr_scheduler"] = experiment_config["training.lr_scheduler"].value
+#         accelerator.init_trackers("tuned3", experiment_config)
 
 
     # Train!
