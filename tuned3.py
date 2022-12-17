@@ -13,6 +13,11 @@ import os
 import random
 from itertools import chain
 
+import torch
+from torch.utils.data import DataLoader
+
+from huggingface_hub import Repository
+
 import datasets
 import hydra
 import torch
@@ -294,11 +299,28 @@ def main(cfg: DictConfig):
     #accelerator = (
        # Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir) if cfg.tracking.enabled else Accelerator()
     #)
+    # Handle the repository creation
+    if accelerator.is_main_process:
+        if args.push_to_hub:
+            if args.hub_model_id is None:
+                repo_name = get_full_repo_name(Path(args.output_dir).name, token=args.hub_token)
+            else:
+                repo_name = args.hub_model_id
+            repo = Repository(args.output_dir, clone_from=repo_name)
+
+            with open(os.path.join(args.output_dir, ".gitignore"), "w+") as gitignore:
+                if "step_*" not in gitignore:
+                    gitignore.write("step_*\n")
+                if "epoch_*" not in gitignore:
+                    gitignore.write("epoch_*\n")
+        elif args.output_dir is not None:
+            os.makedirs(args.output_dir, exist_ok=True)    
+    
+    
+    
+    
     #accelerator = create_accelerator(cfg)
     accelerator.wait_for_everyone()
-
-
-
 
 
    
@@ -434,7 +456,7 @@ def main(cfg: DictConfig):
     
  # Figure out how many steps we should save the Accelerator states
     if hasattr(cfg.checkpointing_steps, "isdigit"):
-        checkpointing_steps = cfg.checkpointing_steps
+        checkpointing_steps = cfg.training.checkpoint.checkpointing_steps
         if cfg.training.checkpoint.checkpointing_steps.isdigit():
             checkpointing_steps = int(cfg.training.checkpoint.checkpointing_steps)
     else:
