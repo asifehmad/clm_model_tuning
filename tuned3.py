@@ -464,13 +464,25 @@ def main(cfg: DictConfig):
     else:
         checkpointing_steps = None
 
+#     # We need to initialize the trackers we use, and also store our configuration.
+#     # The trackers initializes automatically on the main process.
+#     if cfg.tracking:
+#         experiment_config = vars(cfg)
+#         # TensorBoard cannot log Enums, need the raw value
+#         experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
+#         accelerator.init_trackers("clm_no_trainer", experiment_config)
+
     # We need to initialize the trackers we use, and also store our configuration.
-    # The trackers initializes automatically on the main process.
-    if cfg.tracking:
+    # We initialize the trackers only on main process because `accelerator.log`
+    # only logs on main process and we don't want empty logs/runs on other processes.
+    if cfg.tracking.enabled is True and accelerator.is_main_process:
         experiment_config = vars(cfg)
         # TensorBoard cannot log Enums, need the raw value
-        experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
-        accelerator.init_trackers("clm_no_trainer", experiment_config)
+        experiment_config["lr_scheduler_type"] = experiment_config[
+            "lr_scheduler_type"
+        ].value
+        accelerator.init_trackers("finetune_using_clm", experiment_config)
+
 
     # Train!
     total_batch_size = cfg.training.train_batch_size * accelerator.num_processes * cfg.training.gradient_accumulation_steps
