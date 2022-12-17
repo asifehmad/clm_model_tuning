@@ -12,7 +12,8 @@ import math
 import os
 import random
 from itertools import chain
-
+import json
+from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 
@@ -40,7 +41,7 @@ from transformers import (
 
 import bittensor
 
-deepspeed_plugin = DeepSpeedPlugin(zero_stage=3, gradient_accumulation_steps=4)
+# deepspeed_plugin = DeepSpeedPlugin(zero_stage=3, gradient_accumulation_steps=4)
 
 def check_cfg_and_load_defaults(cfg: DictConfig) -> DictConfig:
 
@@ -290,15 +291,15 @@ def main(cfg: DictConfig):
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
     )
+#     accelerator = (
+#         Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir)
+#         if cfg.tracking.enabled
+#         else Accelerator(fp16=True, deepspeed_plugin=deepspeed_plugin)
+#         #else Accelerator()
+#     )
     accelerator = (
-        Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir)
-        if cfg.tracking.enabled
-        else Accelerator(fp16=True, deepspeed_plugin=deepspeed_plugin)
-        #else Accelerator()
+       Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir) if cfg.tracking.enabled else Accelerator()
     )
-    #accelerator = (
-       # Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir) if cfg.tracking.enabled else Accelerator()
-    #)
     
     
 #     # Handle the repository creation
@@ -503,7 +504,7 @@ def main(cfg: DictConfig):
     best_metric_checkpoint = None
 
     # Potentially load in the weights and states from a previous save
-    if cfg.resume_from_checkpoint:
+    if cfg.training.checkpoint.resume_from_checkpoint:
         # New Code #
         # Loads the DeepSpeed checkpoint from the specified path
         _, last_global_step = load_training_checkpoint(
@@ -518,7 +519,7 @@ def main(cfg: DictConfig):
 
     for epoch in range(starting_epoch, cfg.training.num_epochs):
         model.train()
-        if cfg.with_tracking:
+        if cfg.tracking:
             total_loss = 0
         for step, batch in enumerate(train_dataloader):
             # We need to skip steps until we reach the resumed step
@@ -529,7 +530,7 @@ def main(cfg: DictConfig):
             outputs = model(**batch)
             loss = outputs.loss
             # We keep track of the loss at each epoch
-            if cfg.with_tracking:
+            if cfg.tracking:
                 total_loss += loss.detach().float()
             loss = loss / cfg.training.gradient_accumulation_steps
             accelerator.backward(loss)
@@ -552,7 +553,7 @@ def main(cfg: DictConfig):
         perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
         logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
 
-        if cfg.with_tracking:
+        if cfg.tracking:
             accelerator.log(
                 {
                     "perplexity": perplexity,
