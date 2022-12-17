@@ -481,7 +481,7 @@ def main(cfg: DictConfig):
         experiment_config = vars(cfg)
         # TensorBoard cannot log Enums, need the raw value
 #         experiment_config["lr_scheduler_type"] = experiment_config["lr_scheduler_type"].value
-        experiment_config["lr_scheduler"] = experiment_config["lr_scheduler"].value
+        experiment_config["training.lr_scheduler"] = experiment_config["training.lr_scheduler"].value
         accelerator.init_trackers("tuned3", experiment_config)
 
 
