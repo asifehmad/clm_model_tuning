@@ -43,6 +43,7 @@ training:
 
   checkpoint:
     resume_from_checkpoint: 0 # integer representing which checkpoint to load from, or <= 0 to not
+    checkpointing_steps: epoch
     every_n_steps: null
     
   hub:
