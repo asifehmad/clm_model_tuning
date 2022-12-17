@@ -54,3 +54,5 @@ training:
 tracking:
   enabled: false
   report_to: "all"
+  
+load_best_model: true
