@@ -291,6 +291,9 @@ def main(cfg: DictConfig):
         else Accelerator(fp16=True, deepspeed_plugin=deepspeed_plugin)
         #else Accelerator()
     )
+    #accelerator = (
+       # Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir) if cfg.tracking.enabled else Accelerator()
+    #)
     #accelerator = create_accelerator(cfg)
     accelerator.wait_for_everyone()
 
@@ -464,7 +467,7 @@ def main(cfg: DictConfig):
     best_metric_checkpoint = None
 
     # Potentially load in the weights and states from a previous save
-    if args.resume_from_checkpoint:
+    if cfg.resume_from_checkpoint:
         # New Code #
         # Loads the DeepSpeed checkpoint from the specified path
         _, last_global_step = load_training_checkpoint(
@@ -513,7 +516,7 @@ def main(cfg: DictConfig):
         perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
         logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
 
-        if args.with_tracking:
+        if cfg.with_tracking:
             accelerator.log(
                 {
                     "perplexity": perplexity,
@@ -539,7 +542,7 @@ def main(cfg: DictConfig):
 
     # New Code #
     # Loads the best checkpoint after the training is finished
-    if args.load_best_model:
+    if cfg.load_best_model:
         _, last_global_step = load_training_checkpoint(
             model,
             "/".join(best_metric_checkpoint.split("/")[:-1]),
@@ -556,7 +559,7 @@ def main(cfg: DictConfig):
             f"Best metric {best_metric} does not match the metric {perplexity} of the loaded best model."
         )
 
-    if args.output_dir is not None:
+    if cfg.output_dir is not None:
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
 
