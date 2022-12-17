@@ -299,22 +299,24 @@ def main(cfg: DictConfig):
     #accelerator = (
        # Accelerator(log_with=cfg.tracking.report_to, logging_dir=cfg.output_dir) if cfg.tracking.enabled else Accelerator()
     #)
-    # Handle the repository creation
-    if accelerator.is_main_process:
-        if args.push_to_hub:
-            if args.hub_model_id is None:
-                repo_name = get_full_repo_name(Path(args.output_dir).name, token=args.hub_token)
-            else:
-                repo_name = args.hub_model_id
-            repo = Repository(args.output_dir, clone_from=repo_name)
+    
+    
+#     # Handle the repository creation
+#     if accelerator.is_main_process:
+#         if cfg.push_to_hub:
+#             if cfg.hub_model_id is None:
+#                 repo_name = get_full_repo_name(Path(cfg.output_dir).name, token=cfg.hub_token)
+#             else:
+#                 repo_name = cfg.hub_model_id
+#             repo = Repository(cfg.output_dir, clone_from=repo_name)
 
-            with open(os.path.join(args.output_dir, ".gitignore"), "w+") as gitignore:
-                if "step_*" not in gitignore:
-                    gitignore.write("step_*\n")
-                if "epoch_*" not in gitignore:
-                    gitignore.write("epoch_*\n")
-        elif args.output_dir is not None:
-            os.makedirs(args.output_dir, exist_ok=True)    
+#             with open(os.path.join(cfg.output_dir, ".gitignore"), "w+") as gitignore:
+#                 if "step_*" not in gitignore:
+#                     gitignore.write("step_*\n")
+#                 if "epoch_*" not in gitignore:
+#                     gitignore.write("epoch_*\n")
+#         elif cfg.output_dir is not None:
+#             os.makedirs(cfg.output_dir, exist_ok=True)    
     
     
     
@@ -599,8 +601,8 @@ def main(cfg: DictConfig):
         )
         if accelerator.is_main_process:
             tokenizer.save_pretrained(cfg.output_dir)
-            if cfg.push_to_hub:
-                repo.push_to_hub(commit_message="End of training", auto_lfs_prune=True)
+#             if cfg.push_to_hub:
+#                 repo.push_to_hub(commit_message="End of training", auto_lfs_prune=True)
 
         with open(os.path.join(cfg.output_dir, "all_results.json"), "w") as f:
             json.dump({"perplexity": perplexity, "eval_loss": eval_loss.item()}, f)
