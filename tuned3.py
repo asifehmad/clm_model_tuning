@@ -496,7 +496,7 @@ def main(cfg: DictConfig):
     logger.info(f"  Num examples = {len(train_dataset)}")
     logger.info(f"  Num Epochs = {cfg.training.num_epochs}")
     logger.info(f"  Instantaneous batch size per device = {cfg.training.train_batch_size}")
-    logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
+#     logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
     logger.info(f"  Gradient Accumulation steps = {cfg.training.gradient_accumulation_steps}")
     logger.info(f"  Total optimization steps = {cfg.training.max_train_steps}")
     
@@ -581,8 +581,8 @@ def main(cfg: DictConfig):
 
         # New Code #
         # Tracks the best checkpoint and best metric
-        if best_metric is None or best_metric > perplexity:
-            best_metric = perplexity
+        if best_metric is None or best_metric > eval_loss:
+            best_metric = eval_loss
             best_metric_checkpoint = os.path.join(cfg.output_dir, str(epoch))
             accelerator.print(f"New best metric: {best_metric} at epoch {epoch}")
             accelerator.print(f"best_metric_checkpoint: {best_metric_checkpoint}")
@@ -601,9 +601,9 @@ def main(cfg: DictConfig):
     # Evaluates using the best checkpoint
     perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
     logger.info(f"Best model metrics: perplexity: {perplexity} train_loss: {train_loss} eval_loss: {eval_loss}")
-    if perplexity != best_metric:
+    if eval_loss != best_metric:
         raise AssertionError(
-            f"Best metric {best_metric} does not match the metric {perplexity} of the loaded best model."
+            f"Best metric {best_metric} does not match the metric {eval_loss} of the loaded best model."
         )
 
     if cfg.output_dir is not None:
