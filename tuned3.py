@@ -600,7 +600,7 @@ def main(cfg: DictConfig):
     # New Code #
     # Evaluates using the best checkpoint
     perplexity, eval_loss = evaluate(cfg, model, eval_dataloader, accelerator, eval_dataset)
-    logger.info(f"Best model metrics: perplexity: {perplexity} train_loss: {train_loss} eval_loss: {eval_loss}")
+    logger.info(f"Best model metrics: perplexity: {perplexity}  eval_loss: {eval_loss}")
     if eval_loss != best_metric:
         raise AssertionError(
             f"Best metric {best_metric} does not match the metric {eval_loss} of the loaded best model."
@@ -629,7 +629,13 @@ def main(cfg: DictConfig):
 
         with open(os.path.join(cfg.output_dir, "all_results.json"), "w") as f:
             json.dump({"perplexity": perplexity, "train_loss": train_loss.item(), "eval_loss": eval_loss.item()}, f)
-
+    
+    print('Started Pushing the Model and Tokenizer to Hugging Face Hub')
+    
+    print('Pushing Model weights and other related files to Hugging Face Hub')
+    model.push_to_hub(cfg.output_dir) 
+    print('Pushing the Tokenizer and related files to Hugging Face Hub')
+    tokenizer.push_to_hub(cfg.output_dir)
 
 if __name__ == "__main__":
     main()
