@@ -605,7 +605,8 @@ def main(cfg: DictConfig):
         raise AssertionError(
             f"Best metric {best_metric} does not match the metric {eval_loss} of the loaded best model."
         )
-
+        
+    print('Saving the model using the best weights checkpoint in the current output directory')
     if cfg.output_dir is not None:
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
