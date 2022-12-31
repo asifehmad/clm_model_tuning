@@ -631,12 +631,12 @@ def main(cfg: DictConfig):
         with open(os.path.join(cfg.output_dir, "all_results.json"), "w") as f:
             json.dump({"perplexity": perplexity, "train_loss": train_loss.item(), "eval_loss": eval_loss.item()}, f)
     
-    print('Started Pushing the Model and Tokenizer to Hugging Face Hub')
+#     print('Started Pushing the Model and Tokenizer to Hugging Face Hub')
     
-    print('Pushing Model weights and other related files to Hugging Face Hub')
-    model.push_to_hub(cfg.output_dir) 
-    print('Pushing the Tokenizer and related files to Hugging Face Hub')
-    tokenizer.push_to_hub(cfg.output_dir)
+#     print('Pushing Model weights and other related files to Hugging Face Hub')
+#     model.push_to_hub(cfg.output_dir) 
+#     print('Pushing the Tokenizer and related files to Hugging Face Hub')
+#     tokenizer.push_to_hub(cfg.output_dir)
 
 if __name__ == "__main__":
     main()
